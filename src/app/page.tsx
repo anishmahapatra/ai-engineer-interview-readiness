@@ -1,65 +1,785 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Cormorant_Garamond, IBM_Plex_Sans } from "next/font/google";
+import { motion, type Variants } from "framer-motion";
+
+const headingFont = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-heading",
+});
+
+const bodyFont = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+});
+
+const navLinks = [
+  { label: "About", href: "#about" },
+  { label: "What You Master", href: "#master" },
+  { label: "Inside", href: "#inside" },
+  { label: "Contact", href: "#contact" },
+];
+
+const heroBullets = [
+  {
+    icon: "fa-sitemap",
+    text: "End-to-end AI system design frameworks",
+  },
+  {
+    icon: "fa-database",
+    text: "RAG and LLM architecture breakdowns",
+  },
+  {
+    icon: "fa-server",
+    text: "Deployment and scaling reasoning",
+  },
+  {
+    icon: "fa-scale-balanced",
+    text: "Weak vs strong answer comparisons",
+  },
+];
+
+const architectureFlow = [
+  "Data Ingestion",
+  "Embeddings",
+  "Vector DB",
+  "Retrieval",
+  "LLM",
+  "Evaluation",
+  "Monitoring",
+];
+
+const dataScientistFocus = [
+  "Model development",
+  "Feature engineering",
+  "Experimentation",
+  "Metric optimization",
+];
+
+const aiEngineerExpectations = [
+  "End-to-end system ownership",
+  "Architecture decisions",
+  "Production deployment",
+  "Cost and latency tradeoffs",
+  "Reliability and monitoring",
+];
+
+const masteryCards = [
+  {
+    icon: "fa-diagram-project",
+    title: "AI System Design Framework",
+    description:
+      "Build structured answers that map problem framing, architecture choices, and production constraints into a coherent system narrative.",
+    className: "md:col-span-2",
+  },
+  {
+    icon: "fa-layer-group",
+    title: "RAG Architecture Deep Dive",
+    description:
+      "Break down retrieval pipelines, indexing strategies, and context assembly decisions with interview-grade technical precision.",
+    className: "md:col-span-1",
+  },
+  {
+    icon: "fa-flask-vial",
+    title: "LLM Evaluation & Tradeoffs",
+    description:
+      "Compare offline and online evaluation methods while reasoning about quality, latency, and model selection tradeoffs.",
+    className: "md:col-span-1",
+  },
+  {
+    icon: "fa-cloud-arrow-up",
+    title: "Deployment Patterns",
+    description:
+      "Reason through serving architecture, observability baselines, rollback strategies, and cost-aware scaling patterns.",
+    className: "md:col-span-2",
+  },
+  {
+    icon: "fa-comments",
+    title: "Mock Interview Scenarios",
+    description:
+      "Practice high-pressure design prompts and sharpen response quality through scenario-based system walkthroughs.",
+    className: "md:col-span-1",
+  },
+  {
+    icon: "fa-pen-ruler",
+    title: "Answer Structuring Templates",
+    description:
+      "Use structured response templates that highlight architecture decisions, assumptions, and measurable outcomes.",
+    className: "md:col-span-1",
+  },
+];
+
+const playbookModules = [
+  {
+    title: "Architecture Diagram Preview",
+    description:
+      "Annotated blueprint of a production-grade LLM workflow with explicit handoffs across ingestion, retrieval, generation, and monitoring.",
+  },
+  {
+    title: "Weak vs Strong Answer Comparison",
+    description:
+      "Side-by-side interview responses highlighting where shallow model-centric answers fail and system-first reasoning succeeds.",
+  },
+  {
+    title: "14-Day Roadmap Timeline",
+    description:
+      "Focused progression plan that builds architecture depth, communication precision, and interview-ready system judgment.",
+  },
+];
+const COPYRIGHT_YEAR = "2026";
+
+const heroContainer: Variants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.16,
+    },
+  },
+};
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, ease: "easeOut" },
+  },
+};
+
+const floatingCtaVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};
+
+function validateEmail(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "Email is required.";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmed)) return "Enter a valid email address.";
+  return "";
+}
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showFloatingCta, setShowFloatingCta] = useState(false);
+  const [isHeroVisible, setIsHeroVisible] = useState(true);
+  const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const heroRef = useRef<HTMLElement | null>(null);
+
+  const emailError = emailTouched ? validateEmail(email) : "";
+  const isEmailInvalid = emailTouched && Boolean(emailError);
+  const isSubmitDisabled = Boolean(validateEmail(email));
+
+  useEffect(() => {
+    const existing = document.getElementById("font-awesome-cdn");
+    if (existing) return;
+
+    const link = document.createElement("link");
+    link.id = "font-awesome-cdn";
+    link.rel = "stylesheet";
+    link.href =
+      "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css";
+    link.integrity =
+      "sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==";
+    link.crossOrigin = "anonymous";
+    link.referrerPolicy = "no-referrer";
+    document.head.appendChild(link);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const threshold = window.innerHeight * 0.4;
+      setShowFloatingCta(window.scrollY > threshold);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const heroElement = heroRef.current;
+    if (!heroElement) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsHeroVisible(entries[0]?.isIntersecting ?? false);
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(heroElement);
+    return () => observer.disconnect();
+  }, []);
+
+  const shouldShowFloatingCta = showFloatingCta && !isHeroVisible;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+    <div
+      className={`${bodyFont.variable} ${headingFont.variable} min-h-screen bg-[var(--bg)] text-[var(--ink)] antialiased`}
+      style={{ fontFamily: "var(--font-body)" }}
+    >
+      <style jsx global>{`
+        :root {
+          --bg: #f7f2ea;
+          --surface: #efebe4;
+          --ink: #161d26;
+          --accent: #183a73;
+          --muted: #4f5b6a;
+        }
+      `}</style>
+
+      <header className="sticky top-0 z-50 border-b border-[color:rgba(22,29,38,0.16)] bg-[color:rgba(247,242,234,0.94)] backdrop-blur-sm">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
           <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#"
+            className={`${headingFont.className} text-lg font-semibold tracking-tight text-[var(--ink)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] sm:text-xl`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            AI Engineer Interview Readiness
+          </a>
+
+          <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm font-medium tracking-wide text-[var(--muted)] transition-colors duration-200 hover:text-[var(--ink)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)]"
+              >
+                {link.label}
+              </a>
+            ))}
+            <a
+              href="#contact"
+              className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(24,58,115,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+            >
+              Join Early Access
+            </a>
+          </nav>
+
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[color:rgba(22,29,38,0.3)] text-[var(--ink)] transition-colors duration-200 hover:bg-[var(--surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] lg:hidden"
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            onClick={() => setMenuOpen((prev) => !prev)}
+          >
+            <i
+              className={`fa-solid ${menuOpen ? "fa-xmark" : "fa-bars"} text-sm`}
+              aria-hidden="true"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </button>
         </div>
+
+        {menuOpen ? (
+          <nav
+            id="mobile-menu"
+            className="border-t border-[color:rgba(22,29,38,0.16)] bg-[var(--bg)] px-5 py-5 lg:hidden"
+            aria-label="Mobile navigation"
+          >
+            <div className="mx-auto flex max-w-6xl flex-col gap-4">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm font-medium tracking-wide text-[var(--ink)]"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+              <a
+                href="#contact"
+                className="mt-2 inline-flex w-fit rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4]"
+                onClick={() => setMenuOpen(false)}
+              >
+                Join Early Access
+              </a>
+            </div>
+          </nav>
+        ) : null}
+      </header>
+
+      <main>
+        <section
+          ref={heroRef}
+          className="mx-auto w-full max-w-6xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pb-20 lg:pt-36"
+        >
+          <motion.div
+            variants={heroContainer}
+            initial="hidden"
+            animate="show"
+            className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start"
+          >
+            <motion.div variants={fadeUp} className="space-y-9">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
+                AI Engineer Interview Readiness
+              </p>
+              <h1
+                className={`${headingFont.className} max-w-3xl text-5xl font-semibold leading-[0.94] tracking-tight text-[#0c1218] sm:text-[4.8rem] lg:text-[5.5rem]`}
+              >
+                Crack AI Engineer Interviews — Designed for Data Scientists.
+              </h1>
+              <p className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
+                Master production-grade AI system design, LLM architecture, and the
+                real-world tradeoffs hiring managers evaluate.
+              </p>
+              <ul className="grid gap-3 text-sm text-[var(--ink)] sm:text-base">
+                {heroBullets.map((item) => (
+                  <li key={item.text} className="flex items-start gap-4">
+                    <i
+                      className={`fa-solid ${item.icon} mt-1 text-sm text-[var(--accent)]`}
+                      aria-hidden="true"
+                    />
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="space-y-3">
+                <a
+                  href="#contact"
+                  className="inline-flex rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+                >
+                  Join Early Access
+                </a>
+                <p className="text-sm text-[var(--muted)]">
+                  Designed for working Data Scientists preparing for AI Engineer
+                  roles.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.aside
+              variants={fadeUp}
+              className="rounded-2xl border border-[color:rgba(22,29,38,0.24)] bg-[var(--surface)] p-5 shadow-[0_24px_46px_rgba(22,29,38,0.16)] sm:p-7"
+              aria-label="AI system architecture diagram placeholder"
+            >
+              <div className="mb-4 flex items-center justify-between border-b border-[color:rgba(22,29,38,0.2)] pb-3">
+                <h2
+                  className={`${headingFont.className} text-2xl font-semibold tracking-tight`}
+                >
+                  System Architecture
+                </h2>
+                <span className="rounded-full border border-[color:rgba(22,29,38,0.24)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                  Interview View
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {architectureFlow.map((step, index) => (
+                  <div key={step} className="flex items-center gap-2">
+                    <div className="flex min-h-10 items-center justify-center rounded-xl border border-[color:rgba(22,29,38,0.24)] bg-[var(--bg)] px-4 py-2 text-center text-xs font-semibold leading-tight tracking-wide text-[var(--ink)] sm:min-h-12 sm:py-3 sm:text-sm">
+                      {step}
+                    </div>
+                    {index < architectureFlow.length - 1 ? (
+                      <i
+                        className="fa-solid fa-arrow-right text-[10px] text-[var(--muted)] sm:text-xs"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </motion.aside>
+          </motion.div>
+        </section>
+
+        <motion.section
+          id="about"
+          className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="mb-8 max-w-3xl">
+            <h2
+              className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+            >
+              The Gap Between Model Builder and AI Engineer
+            </h2>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <article className="rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)]">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                Data Scientist Focus
+              </h3>
+              <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
+                {dataScientistFocus.map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <i
+                      className="fa-solid fa-circle-dot mt-1 text-[10px] text-[var(--accent)]"
+                      aria-hidden="true"
+                    />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className="rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)]">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                AI Engineer Expectations
+              </h3>
+              <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
+                {aiEngineerExpectations.map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <i
+                      className="fa-solid fa-circle-dot mt-1 text-[10px] text-[var(--accent)]"
+                      aria-hidden="true"
+                    />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </div>
+
+          <p className="mt-8 border-l-2 border-[var(--accent)] pl-4 text-base leading-relaxed text-[var(--ink)] sm:text-lg">
+            AI Engineer interviews evaluate system thinking — not just modeling
+            skill.
+          </p>
+        </motion.section>
+
+        <motion.section
+          className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 lg:py-14"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="grid gap-5 rounded-2xl border border-[color:rgba(22,29,38,0.2)] bg-[var(--surface)] p-6 shadow-[0_16px_30px_rgba(22,29,38,0.12)] md:grid-cols-2 md:gap-6 md:p-7">
+            <article>
+              <h2
+                className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+              >
+                Who This Is For
+              </h2>
+              <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
+                <li>Data Scientists with 2–6 years experience.</li>
+                <li>Preparing for AI Engineer interviews.</li>
+                <li>Want structured system design depth.</li>
+              </ul>
+            </article>
+
+            <article>
+              <h3
+                className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+              >
+                Who This Is Not For
+              </h3>
+              <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
+                <li>Absolute beginners.</li>
+                <li>Pure ML theory focus.</li>
+                <li>Bootcamp-style coding prep.</li>
+              </ul>
+            </article>
+          </div>
+        </motion.section>
+
+        <motion.section
+          id="master"
+          className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="mb-8 max-w-3xl">
+            <h2
+              className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+            >
+              What You Master
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+              After this, you should be able to clearly design and articulate a
+              production AI system in an interview setting.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+            {masteryCards.map((card) => (
+              <article
+                key={card.title}
+                className={`${card.className} rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(22,29,38,0.16)]`}
+              >
+                <i
+                  className={`fa-solid ${card.icon} text-base text-[var(--accent)]`}
+                  aria-hidden="true"
+                />
+                <h3
+                  className={`${headingFont.className} mt-5 text-2xl font-semibold tracking-tight`}
+                >
+                  {card.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                  {card.description}
+                </p>
+              </article>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.section
+          id="inside"
+          className="mx-auto w-full max-w-6xl bg-[color:rgba(24,58,115,0.05)] px-5 py-14 sm:px-8 lg:py-20"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="mx-auto w-full max-w-6xl">
+            <div className="mb-8 max-w-2xl">
+              <h2
+                className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+              >
+                Inside the Playbook
+              </h2>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-3">
+              {playbookModules.map((module, idx) => (
+                <article
+                  key={module.title}
+                  className="rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(22,29,38,0.16)]"
+                >
+                  <div className="mb-5 flex items-center justify-between border-b border-[color:rgba(22,29,38,0.16)] pb-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                      Module {idx + 1}
+                    </span>
+                    <i
+                      className="fa-solid fa-file-lines text-sm text-[var(--accent)]"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <h3
+                    className={`${headingFont.className} text-2xl font-semibold tracking-tight`}
+                  >
+                    {module.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                    {module.description}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+
+        <motion.section
+          className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="rounded-2xl border border-[color:rgba(24,58,115,0.26)] bg-[color:rgba(24,58,115,0.1)] p-8 shadow-[0_14px_30px_rgba(24,58,115,0.12)] sm:p-10 lg:p-12">
+            <h2
+              className={`${headingFont.className} max-w-3xl text-3xl font-semibold tracking-tight text-[var(--ink)] sm:text-4xl`}
+            >
+              Ready to Transition from Data Scientist to AI Engineer?
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
+              Join early access and get first access to the AI Engineer Interview
+              Playbook.
+            </p>
+            <a
+              href="#contact"
+              className="mt-8 inline-flex rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+            >
+              Join Early Access
+            </a>
+          </div>
+        </motion.section>
+
+        <motion.section
+          id="contact"
+          className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+            <div>
+              <h2
+                className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+              >
+                Contact
+              </h2>
+              <p className="mt-4 max-w-md text-base leading-relaxed text-[var(--muted)]">
+                Share your background and interview goals. We&apos;ll reach out when
+                early access opens.
+              </p>
+            </div>
+
+            <form
+              className="space-y-5 rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] sm:p-7"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setEmailTouched(true);
+              }}
+              noValidate
+            >
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-semibold text-[var(--ink)]">
+                  Name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  className="w-full rounded-xl border border-[color:rgba(22,29,38,0.26)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
+                  placeholder="Your full name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-semibold text-[var(--ink)]">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  onBlur={() => setEmailTouched(true)}
+                  aria-invalid={isEmailInvalid}
+                  aria-describedby={isEmailInvalid ? "email-error" : undefined}
+                  className={`w-full rounded-xl border bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] ${
+                    isEmailInvalid
+                      ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                      : "border-[color:rgba(22,29,38,0.26)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
+                  }`}
+                  placeholder="you@company.com"
+                />
+                {isEmailInvalid ? (
+                  <p id="email-error" className="text-sm text-red-700">
+                    {emailError}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="role"
+                  className="text-sm font-semibold text-[var(--ink)]"
+                >
+                  Current Role
+                </label>
+                <input
+                  id="role"
+                  name="role"
+                  type="text"
+                  className="w-full rounded-xl border border-[color:rgba(22,29,38,0.26)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
+                  placeholder="Mid-level Data Scientist"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="message"
+                  className="text-sm font-semibold text-[var(--ink)]"
+                >
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  rows={4}
+                  className="w-full resize-none rounded-xl border border-[color:rgba(22,29,38,0.26)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
+                  placeholder="What part of AI engineer interviews feels hardest right now?"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitDisabled}
+                  className="rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                >
+                  Join Early Access
+                </button>
+                <p className="text-sm text-[var(--muted)]">
+                  No spam. No generic newsletters. Just early access updates.
+                </p>
+              </div>
+            </form>
+          </div>
+        </motion.section>
       </main>
+
+      <footer className="border-t border-[color:rgba(22,29,38,0.16)]">
+        <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1.2fr_1fr_1fr] lg:items-start">
+          <div>
+            <p
+              className={`${headingFont.className} text-2xl font-semibold tracking-tight text-[var(--ink)]`}
+            >
+              AI Engineer Interview Readiness
+            </p>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--muted)]">
+              Helping Data Scientists build real AI system depth.
+            </p>
+          </div>
+
+          <nav className="space-y-2" aria-label="Footer navigation">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+              Navigation
+            </p>
+            {navLinks.map((link) => (
+              <a
+                key={`footer-${link.label}`}
+                href={link.href}
+                className="block text-sm text-[var(--ink)] transition-colors duration-200 hover:text-[var(--accent)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)]"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+              Contact
+            </p>
+            <a
+              href="mailto:hello@aiinterviewreadiness.com"
+              className="block text-sm text-[var(--ink)] transition-colors duration-200 hover:text-[var(--accent)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)]"
+            >
+              hello@aiinterviewreadiness.com
+            </a>
+            <p className="pt-3 text-xs text-[var(--muted)]">
+              Copyright {COPYRIGHT_YEAR} AI Engineer Interview Readiness
+            </p>
+          </div>
+        </div>
+      </footer>
+
+      <motion.div
+        variants={floatingCtaVariants}
+        initial="hidden"
+        animate={shouldShowFloatingCta ? "show" : "hidden"}
+        className="pointer-events-none fixed bottom-3 right-3 z-[70]"
+        aria-hidden={!shouldShowFloatingCta}
+      >
+        <a
+          href="#contact"
+          className="pointer-events-auto inline-flex max-w-[calc(100vw-1.5rem)] rounded-full bg-[var(--accent)] px-4 py-3 text-xs font-semibold tracking-wide text-[#f8f7f4] shadow-[0_12px_24px_rgba(24,58,115,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(24,58,115,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] sm:px-5 sm:text-sm"
+        >
+          Join Early Access
+        </a>
+      </motion.div>
     </div>
   );
 }
