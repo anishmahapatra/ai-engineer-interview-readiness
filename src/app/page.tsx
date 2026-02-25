@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { useEffect, useRef, useState } from "react";
+import { Cormorant_Garamond, IBM_Plex_Sans } from "next/font/google";
 import { motion, type Variants } from "framer-motion";
 
 const headingFont = Cormorant_Garamond({
@@ -10,9 +10,9 @@ const headingFont = Cormorant_Garamond({
   variable: "--font-heading",
 });
 
-const bodyFont = Manrope({
+const bodyFont = IBM_Plex_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-body",
 });
 
@@ -129,6 +129,7 @@ const playbookModules = [
       "Focused progression plan that builds architecture depth, communication precision, and interview-ready system judgment.",
   },
 ];
+const COPYRIGHT_YEAR = "2026";
 
 const heroContainer: Variants = {
   hidden: { opacity: 0 },
@@ -150,8 +151,34 @@ const fadeUp: Variants = {
   },
 };
 
+const floatingCtaVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};
+
+function validateEmail(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "Email is required.";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmed)) return "Enter a valid email address.";
+  return "";
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showFloatingCta, setShowFloatingCta] = useState(false);
+  const [isHeroVisible, setIsHeroVisible] = useState(true);
+  const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const heroRef = useRef<HTMLElement | null>(null);
+
+  const emailError = emailTouched ? validateEmail(email) : "";
+  const isEmailInvalid = emailTouched && Boolean(emailError);
+  const isSubmitDisabled = Boolean(validateEmail(email));
 
   useEffect(() => {
     const existing = document.getElementById("font-awesome-cdn");
@@ -169,6 +196,34 @@ export default function Home() {
     document.head.appendChild(link);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      const threshold = window.innerHeight * 0.4;
+      setShowFloatingCta(window.scrollY > threshold);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const heroElement = heroRef.current;
+    if (!heroElement) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsHeroVisible(entries[0]?.isIntersecting ?? false);
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(heroElement);
+    return () => observer.disconnect();
+  }, []);
+
+  const shouldShowFloatingCta = showFloatingCta && !isHeroVisible;
+
   return (
     <div
       className={`${bodyFont.variable} ${headingFont.variable} min-h-screen bg-[var(--bg)] text-[var(--ink)] antialiased`}
@@ -176,19 +231,19 @@ export default function Home() {
     >
       <style jsx global>{`
         :root {
-          --bg: #f5f3ef;
-          --surface: #ece9e2;
-          --ink: #1c222b;
+          --bg: #f7f2ea;
+          --surface: #efebe4;
+          --ink: #161d26;
           --accent: #183a73;
-          --muted: #55606f;
+          --muted: #4f5b6a;
         }
       `}</style>
 
-      <header className="sticky top-0 z-50 border-b border-[color:rgba(28,34,43,0.14)] bg-[color:rgba(245,243,239,0.94)] backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-[color:rgba(22,29,38,0.16)] bg-[color:rgba(247,242,234,0.94)] backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
           <a
             href="#"
-            className={`${headingFont.className} text-lg font-semibold tracking-tight text-[var(--ink)] sm:text-xl`}
+            className={`${headingFont.className} text-lg font-semibold tracking-tight text-[var(--ink)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] sm:text-xl`}
           >
             AI Engineer Interview Readiness
           </a>
@@ -198,14 +253,14 @@ export default function Home() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm font-medium tracking-wide text-[var(--muted)] transition-colors duration-200 hover:text-[var(--ink)]"
+                className="text-sm font-medium tracking-wide text-[var(--muted)] transition-colors duration-200 hover:text-[var(--ink)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)]"
               >
                 {link.label}
               </a>
             ))}
             <a
               href="#contact"
-              className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(24,58,115,0.24)]"
+              className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(24,58,115,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
             >
               Join Early Access
             </a>
@@ -213,7 +268,7 @@ export default function Home() {
 
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[color:rgba(28,34,43,0.25)] text-[var(--ink)] transition-colors duration-200 hover:bg-[var(--surface)] lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[color:rgba(22,29,38,0.3)] text-[var(--ink)] transition-colors duration-200 hover:bg-[var(--surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] lg:hidden"
             aria-label="Toggle navigation menu"
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
@@ -229,7 +284,7 @@ export default function Home() {
         {menuOpen ? (
           <nav
             id="mobile-menu"
-            className="border-t border-[color:rgba(28,34,43,0.14)] bg-[var(--bg)] px-5 py-5 lg:hidden"
+            className="border-t border-[color:rgba(22,29,38,0.16)] bg-[var(--bg)] px-5 py-5 lg:hidden"
             aria-label="Mobile navigation"
           >
             <div className="mx-auto flex max-w-6xl flex-col gap-4">
@@ -245,7 +300,7 @@ export default function Home() {
               ))}
               <a
                 href="#contact"
-                className="mt-2 inline-flex w-fit rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold tracking-wide text-[#f8f7f4]"
+                className="mt-2 inline-flex w-fit rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4]"
                 onClick={() => setMenuOpen(false)}
               >
                 Join Early Access
@@ -256,29 +311,32 @@ export default function Home() {
       </header>
 
       <main>
-        <section className="mx-auto w-full max-w-6xl px-5 pb-14 pt-12 sm:px-8 sm:pt-16 lg:pb-20 lg:pt-20">
+        <section
+          ref={heroRef}
+          className="mx-auto w-full max-w-6xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pb-20 lg:pt-36"
+        >
           <motion.div
             variants={heroContainer}
             initial="hidden"
             animate="show"
             className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start"
           >
-            <motion.div variants={fadeUp} className="space-y-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+            <motion.div variants={fadeUp} className="space-y-9">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
                 AI Engineer Interview Readiness
               </p>
               <h1
-                className={`${headingFont.className} max-w-3xl text-4xl font-semibold leading-[1.04] tracking-tight text-[var(--ink)] sm:text-5xl lg:text-6xl`}
+                className={`${headingFont.className} max-w-3xl text-5xl font-semibold leading-[0.94] tracking-tight text-[#0c1218] sm:text-[4.8rem] lg:text-[5.5rem]`}
               >
                 Crack AI Engineer Interviews — Designed for Data Scientists.
               </h1>
-              <p className="max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
+              <p className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
                 Master production-grade AI system design, LLM architecture, and the
                 real-world tradeoffs hiring managers evaluate.
               </p>
               <ul className="grid gap-3 text-sm text-[var(--ink)] sm:text-base">
                 {heroBullets.map((item) => (
-                  <li key={item.text} className="flex items-start gap-3">
+                  <li key={item.text} className="flex items-start gap-4">
                     <i
                       className={`fa-solid ${item.icon} mt-1 text-sm text-[var(--accent)]`}
                       aria-hidden="true"
@@ -287,26 +345,32 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <a
-                href="#contact"
-                className="inline-flex rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)]"
-              >
-                Join Early Access
-              </a>
+              <div className="space-y-3">
+                <a
+                  href="#contact"
+                  className="inline-flex rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+                >
+                  Join Early Access
+                </a>
+                <p className="text-sm text-[var(--muted)]">
+                  Designed for working Data Scientists preparing for AI Engineer
+                  roles.
+                </p>
+              </div>
             </motion.div>
 
             <motion.aside
               variants={fadeUp}
-              className="rounded-2xl border border-[color:rgba(28,34,43,0.16)] bg-[var(--surface)] p-5 shadow-[0_22px_42px_rgba(28,34,43,0.12)] sm:p-7"
+              className="rounded-2xl border border-[color:rgba(22,29,38,0.24)] bg-[var(--surface)] p-5 shadow-[0_24px_46px_rgba(22,29,38,0.16)] sm:p-7"
               aria-label="AI system architecture diagram placeholder"
             >
-              <div className="mb-4 flex items-center justify-between border-b border-[color:rgba(28,34,43,0.16)] pb-3">
+              <div className="mb-4 flex items-center justify-between border-b border-[color:rgba(22,29,38,0.2)] pb-3">
                 <h2
                   className={`${headingFont.className} text-2xl font-semibold tracking-tight`}
                 >
                   System Architecture
                 </h2>
-                <span className="rounded-full border border-[color:rgba(28,34,43,0.2)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+                <span className="rounded-full border border-[color:rgba(22,29,38,0.24)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
                   Interview View
                 </span>
               </div>
@@ -314,7 +378,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-2">
                 {architectureFlow.map((step, index) => (
                   <div key={step} className="flex items-center gap-2">
-                    <div className="rounded-xl border border-[color:rgba(28,34,43,0.18)] bg-[var(--bg)] px-3 py-2 text-xs font-semibold tracking-wide text-[var(--ink)] sm:px-4 sm:py-3 sm:text-sm">
+                    <div className="flex min-h-10 items-center justify-center rounded-xl border border-[color:rgba(22,29,38,0.24)] bg-[var(--bg)] px-4 py-2 text-center text-xs font-semibold leading-tight tracking-wide text-[var(--ink)] sm:min-h-12 sm:py-3 sm:text-sm">
                       {step}
                     </div>
                     {index < architectureFlow.length - 1 ? (
@@ -347,8 +411,8 @@ export default function Home() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <article className="rounded-2xl border border-[color:rgba(28,34,43,0.16)] bg-[var(--surface)] p-6">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+            <article className="rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)]">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
                 Data Scientist Focus
               </h3>
               <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
@@ -364,8 +428,8 @@ export default function Home() {
               </ul>
             </article>
 
-            <article className="rounded-2xl border border-[color:rgba(28,34,43,0.16)] bg-[var(--surface)] p-6">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+            <article className="rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)]">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
                 AI Engineer Expectations
               </h3>
               <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
@@ -389,6 +453,42 @@ export default function Home() {
         </motion.section>
 
         <motion.section
+          className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 lg:py-14"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="grid gap-5 rounded-2xl border border-[color:rgba(22,29,38,0.2)] bg-[var(--surface)] p-6 shadow-[0_16px_30px_rgba(22,29,38,0.12)] md:grid-cols-2 md:gap-6 md:p-7">
+            <article>
+              <h2
+                className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+              >
+                Who This Is For
+              </h2>
+              <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
+                <li>Data Scientists with 2–6 years experience.</li>
+                <li>Preparing for AI Engineer interviews.</li>
+                <li>Want structured system design depth.</li>
+              </ul>
+            </article>
+
+            <article>
+              <h3
+                className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
+              >
+                Who This Is Not For
+              </h3>
+              <ul className="mt-4 space-y-3 text-sm text-[var(--ink)] sm:text-base">
+                <li>Absolute beginners.</li>
+                <li>Pure ML theory focus.</li>
+                <li>Bootcamp-style coding prep.</li>
+              </ul>
+            </article>
+          </div>
+        </motion.section>
+
+        <motion.section
           id="master"
           className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
           variants={fadeUp}
@@ -396,19 +496,23 @@ export default function Home() {
           whileInView="show"
           viewport={{ once: true, amount: 0.2 }}
         >
-          <div className="mb-8 max-w-2xl">
+          <div className="mb-8 max-w-3xl">
             <h2
               className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
             >
               What You Master
             </h2>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+              After this, you should be able to clearly design and articulate a
+              production AI system in an interview setting.
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3 md:gap-5">
             {masteryCards.map((card) => (
               <article
                 key={card.title}
-                className={`${card.className} group rounded-2xl border border-[color:rgba(28,34,43,0.18)] bg-[var(--surface)] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(28,34,43,0.14)]`}
+                className={`${card.className} rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(22,29,38,0.16)]`}
               >
                 <i
                   className={`fa-solid ${card.icon} text-base text-[var(--accent)]`}
@@ -429,42 +533,47 @@ export default function Home() {
 
         <motion.section
           id="inside"
-          className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
+          className="mx-auto w-full max-w-6xl bg-[color:rgba(24,58,115,0.05)] px-5 py-14 sm:px-8 lg:py-20"
           variants={fadeUp}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.2 }}
         >
-          <div className="mb-8 max-w-2xl">
-            <h2
-              className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
-            >
-              Inside the Playbook
-            </h2>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            {playbookModules.map((module, idx) => (
-              <article
-                key={module.title}
-                className="rounded-2xl border border-[color:rgba(28,34,43,0.18)] bg-[var(--surface)] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(28,34,43,0.14)]"
+          <div className="mx-auto w-full max-w-6xl">
+            <div className="mb-8 max-w-2xl">
+              <h2
+                className={`${headingFont.className} text-3xl font-semibold tracking-tight sm:text-4xl`}
               >
-                <div className="mb-5 flex items-center justify-between border-b border-[color:rgba(28,34,43,0.14)] pb-3">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-                    Module {idx + 1}
-                  </span>
-                  <i className="fa-solid fa-file-lines text-sm text-[var(--accent)]" aria-hidden="true" />
-                </div>
-                <h3
-                  className={`${headingFont.className} text-2xl font-semibold tracking-tight`}
+                Inside the Playbook
+              </h2>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-3">
+              {playbookModules.map((module, idx) => (
+                <article
+                  key={module.title}
+                  className="rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(22,29,38,0.16)]"
                 >
-                  {module.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-                  {module.description}
-                </p>
-              </article>
-            ))}
+                  <div className="mb-5 flex items-center justify-between border-b border-[color:rgba(22,29,38,0.16)] pb-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                      Module {idx + 1}
+                    </span>
+                    <i
+                      className="fa-solid fa-file-lines text-sm text-[var(--accent)]"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <h3
+                    className={`${headingFont.className} text-2xl font-semibold tracking-tight`}
+                  >
+                    {module.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                    {module.description}
+                  </p>
+                </article>
+              ))}
+            </div>
           </div>
         </motion.section>
 
@@ -475,7 +584,7 @@ export default function Home() {
           whileInView="show"
           viewport={{ once: true, amount: 0.2 }}
         >
-          <div className="rounded-2xl border border-[color:rgba(24,58,115,0.22)] bg-[color:rgba(24,58,115,0.08)] p-8 sm:p-10 lg:p-12">
+          <div className="rounded-2xl border border-[color:rgba(24,58,115,0.26)] bg-[color:rgba(24,58,115,0.1)] p-8 shadow-[0_14px_30px_rgba(24,58,115,0.12)] sm:p-10 lg:p-12">
             <h2
               className={`${headingFont.className} max-w-3xl text-3xl font-semibold tracking-tight text-[var(--ink)] sm:text-4xl`}
             >
@@ -487,7 +596,7 @@ export default function Home() {
             </p>
             <a
               href="#contact"
-              className="mt-8 inline-flex rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)]"
+              className="mt-8 inline-flex rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
             >
               Join Early Access
             </a>
@@ -515,7 +624,14 @@ export default function Home() {
               </p>
             </div>
 
-            <form className="space-y-5 rounded-2xl border border-[color:rgba(28,34,43,0.16)] bg-[var(--surface)] p-6 sm:p-7">
+            <form
+              className="space-y-5 rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] sm:p-7"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setEmailTouched(true);
+              }}
+              noValidate
+            >
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-semibold text-[var(--ink)]">
                   Name
@@ -524,7 +640,7 @@ export default function Home() {
                   id="name"
                   name="name"
                   type="text"
-                  className="w-full rounded-xl border border-[color:rgba(28,34,43,0.2)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(85,96,111,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.18)]"
+                  className="w-full rounded-xl border border-[color:rgba(22,29,38,0.26)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
                   placeholder="Your full name"
                 />
               </div>
@@ -537,9 +653,23 @@ export default function Home() {
                   id="email"
                   name="email"
                   type="email"
-                  className="w-full rounded-xl border border-[color:rgba(28,34,43,0.2)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(85,96,111,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.18)]"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  onBlur={() => setEmailTouched(true)}
+                  aria-invalid={isEmailInvalid}
+                  aria-describedby={isEmailInvalid ? "email-error" : undefined}
+                  className={`w-full rounded-xl border bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] ${
+                    isEmailInvalid
+                      ? "border-red-600 focus:border-red-600 focus:ring-2 focus:ring-red-200"
+                      : "border-[color:rgba(22,29,38,0.26)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
+                  }`}
                   placeholder="you@company.com"
                 />
+                {isEmailInvalid ? (
+                  <p id="email-error" className="text-sm text-red-700">
+                    {emailError}
+                  </p>
+                ) : null}
               </div>
 
               <div className="space-y-2">
@@ -553,7 +683,7 @@ export default function Home() {
                   id="role"
                   name="role"
                   type="text"
-                  className="w-full rounded-xl border border-[color:rgba(28,34,43,0.2)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(85,96,111,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.18)]"
+                  className="w-full rounded-xl border border-[color:rgba(22,29,38,0.26)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
                   placeholder="Mid-level Data Scientist"
                 />
               </div>
@@ -569,23 +699,29 @@ export default function Home() {
                   id="message"
                   name="message"
                   rows={4}
-                  className="w-full resize-none rounded-xl border border-[color:rgba(28,34,43,0.2)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(85,96,111,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.18)]"
+                  className="w-full resize-none rounded-xl border border-[color:rgba(22,29,38,0.26)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink)] outline-none transition-colors duration-200 placeholder:text-[color:rgba(79,91,106,0.8)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:rgba(24,58,115,0.22)]"
                   placeholder="What part of AI engineer interviews feels hardest right now?"
                 />
               </div>
 
-              <button
-                type="submit"
-                className="rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)]"
-              >
-                Join Early Access
-              </button>
+              <div className="space-y-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitDisabled}
+                  className="rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                >
+                  Join Early Access
+                </button>
+                <p className="text-sm text-[var(--muted)]">
+                  No spam. No generic newsletters. Just early access updates.
+                </p>
+              </div>
             </form>
           </div>
         </motion.section>
       </main>
 
-      <footer className="border-t border-[color:rgba(28,34,43,0.14)]">
+      <footer className="border-t border-[color:rgba(22,29,38,0.16)]">
         <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1.2fr_1fr_1fr] lg:items-start">
           <div>
             <p
@@ -599,14 +735,14 @@ export default function Home() {
           </div>
 
           <nav className="space-y-2" aria-label="Footer navigation">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
               Navigation
             </p>
             {navLinks.map((link) => (
               <a
                 key={`footer-${link.label}`}
                 href={link.href}
-                className="block text-sm text-[var(--ink)] transition-colors duration-200 hover:text-[var(--accent)]"
+                className="block text-sm text-[var(--ink)] transition-colors duration-200 hover:text-[var(--accent)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)]"
               >
                 {link.label}
               </a>
@@ -614,21 +750,36 @@ export default function Home() {
           </nav>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
               Contact
             </p>
             <a
               href="mailto:hello@aiinterviewreadiness.com"
-              className="block text-sm text-[var(--ink)] transition-colors duration-200 hover:text-[var(--accent)]"
+              className="block text-sm text-[var(--ink)] transition-colors duration-200 hover:text-[var(--accent)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)]"
             >
               hello@aiinterviewreadiness.com
             </a>
             <p className="pt-3 text-xs text-[var(--muted)]">
-              Copyright {new Date().getFullYear()} AI Engineer Interview Readiness
+              Copyright {COPYRIGHT_YEAR} AI Engineer Interview Readiness
             </p>
           </div>
         </div>
       </footer>
+
+      <motion.div
+        variants={floatingCtaVariants}
+        initial="hidden"
+        animate={shouldShowFloatingCta ? "show" : "hidden"}
+        className="pointer-events-none fixed bottom-3 right-3 z-[70]"
+        aria-hidden={!shouldShowFloatingCta}
+      >
+        <a
+          href="#contact"
+          className="pointer-events-auto inline-flex max-w-[calc(100vw-1.5rem)] rounded-full bg-[var(--accent)] px-4 py-3 text-xs font-semibold tracking-wide text-[#f8f7f4] shadow-[0_12px_24px_rgba(24,58,115,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(24,58,115,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] sm:px-5 sm:text-sm"
+        >
+          Join Early Access
+        </a>
+      </motion.div>
     </div>
   );
 }
