@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "../../../lib/supabase/server";
+
+export const runtime = "nodejs";
 
 type ContactPayload = {
   name?: unknown;
   email?: unknown;
   role?: unknown;
   message?: unknown;
+  client_timezone?: unknown;
 };
 
 function isValidEmail(email: string) {
@@ -34,6 +38,8 @@ export async function POST(request: Request) {
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const role = typeof body.role === "string" ? body.role.trim() : "";
   const message = typeof body.message === "string" ? body.message.trim() : "";
+  const clientTimezone =
+    typeof body.client_timezone === "string" ? body.client_timezone.trim() : "";
 
   if (!email) {
     return NextResponse.json(
@@ -49,7 +55,47 @@ export async function POST(request: Request) {
     );
   }
 
-  console.log("New contact submission", { name, email, role, message });
+  const country = request.headers.get("x-vercel-ip-country") ?? "";
+  const region = request.headers.get("x-vercel-ip-region") ?? "";
+  const city = request.headers.get("x-vercel-ip-city") ?? "";
+  const forwardedFor = request.headers.get("x-forwarded-for") ?? "";
+  const ipAddress = forwardedFor.split(",")[0]?.trim() ?? "";
+  const userAgent = request.headers.get("user-agent") ?? "";
+  const referrer = request.headers.get("referer") ?? "";
+
+  const url = new URL(request.url);
+  const utmSource = url.searchParams.get("utm_source") ?? "";
+  const utmMedium = url.searchParams.get("utm_medium") ?? "";
+  const utmCampaign = url.searchParams.get("utm_campaign") ?? "";
+  const utmTerm = url.searchParams.get("utm_term") ?? "";
+  const utmContent = url.searchParams.get("utm_content") ?? "";
+
+  const { error } = await supabaseAdmin
+    .schema("public")
+    .from("leads")
+    .insert({
+      name,
+      email,
+      role,
+      message,
+      country,
+      region,
+      city,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      referrer,
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+      utm_term: utmTerm,
+      utm_content: utmContent,
+      client_timezone: clientTimezone,
+    });
+
+  if (error) {
+    console.error("Supabase insert error:", error);
+    return NextResponse.json({ error: "Failed to save lead" }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true }, { status: 200 });
 }
