@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { Cormorant_Garamond, IBM_Plex_Sans } from "next/font/google";
 
 const headingFont = Cormorant_Garamond({
@@ -144,10 +144,13 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const emailError = emailTouched ? validateEmail(email) : "";
   const isEmailInvalid = emailTouched && Boolean(emailError);
-  const isSubmitDisabled = Boolean(validateEmail(email));
+  const isSubmitDisabled = Boolean(validateEmail(email)) || isSubmitting;
 
   useEffect(() => {
     const existing = document.getElementById("font-awesome-cdn");
@@ -166,7 +169,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
@@ -179,6 +181,57 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setEmailTouched(true);
+    setSubmitSuccess(false);
+    setSubmitError("");
+
+    const validationError = validateEmail(email);
+    if (validationError) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const payload = {
+      name: String(formData.get("name") ?? ""),
+      email: email.trim(),
+      role: String(formData.get("role") ?? ""),
+      message: String(formData.get("message") ?? ""),
+    };
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !data.success) {
+        setSubmitError(data.error ?? "Unable to submit. Please try again.");
+        return;
+      }
+
+      setSubmitSuccess(true);
+      event.currentTarget.reset();
+      setEmail("");
+      setEmailTouched(false);
+    } catch {
+      setSubmitError("Unable to submit. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -556,10 +609,7 @@ export default function Home() {
 
             <form
               className="space-y-5 rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] sm:p-7"
-              onSubmit={(event) => {
-                event.preventDefault();
-                setEmailTouched(true);
-              }}
+              onSubmit={handleContactSubmit}
               noValidate
             >
               <div className="space-y-2">
@@ -640,11 +690,19 @@ export default function Home() {
                   disabled={isSubmitDisabled}
                   className="rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                 >
-                  Get Early Access
+                  {isSubmitting ? "Submitting..." : "Get Early Access"}
                 </button>
                 <p className="text-sm text-[var(--muted)]">
                   No spam. No generic newsletters. Just early access updates.
                 </p>
+                {submitSuccess ? (
+                  <p className="text-sm text-[var(--accent)]">
+                    Submitted successfully. We&apos;ll be in touch soon.
+                  </p>
+                ) : null}
+                {submitError ? (
+                  <p className="text-sm text-red-700">{submitError}</p>
+                ) : null}
               </div>
             </form>
           </div>
