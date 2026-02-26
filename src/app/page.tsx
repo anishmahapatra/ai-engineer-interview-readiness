@@ -313,85 +313,87 @@ export default function Home() {
       <main>
         <section
           ref={heroRef}
-          className="mx-auto w-full max-w-6xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pb-20 lg:pt-36"
+          className="bg-[#0f274a]"
         >
-          <motion.div
-            variants={heroContainer}
-            initial="hidden"
-            animate="show"
-            className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start"
-          >
-            <motion.div variants={fadeUp} className="space-y-9">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
-                AI Engineer Interview Readiness
-              </p>
-              <h1
-                className={`${headingFont.className} max-w-3xl text-5xl font-semibold leading-[0.94] tracking-tight text-[#0c1218] sm:text-[4.8rem] lg:text-[5.5rem]`}
-              >
-                Crack AI Engineer Interviews — Designed for Data Scientists.
-              </h1>
-              <p className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
-                Master production-grade AI system design, LLM architecture, and the
-                real-world tradeoffs hiring managers evaluate.
-              </p>
-              <ul className="grid gap-3 text-sm text-[var(--ink)] sm:text-base">
-                {heroBullets.map((item) => (
-                  <li key={item.text} className="flex items-start gap-4">
-                    <i
-                      className={`fa-solid ${item.icon} mt-1 text-sm text-[var(--accent)]`}
-                      aria-hidden="true"
-                    />
-                    <span>{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="space-y-3">
-                <a
-                  href="#contact"
-                  className="inline-flex rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
-                >
-                  Join Early Access
-                </a>
-                <p className="text-sm text-[var(--muted)]">
-                  Designed for working Data Scientists preparing for AI Engineer
-                  roles.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.aside
-              variants={fadeUp}
-              className="rounded-2xl border border-[color:rgba(22,29,38,0.24)] bg-[var(--surface)] p-5 shadow-[0_24px_46px_rgba(22,29,38,0.16)] sm:p-7"
-              aria-label="AI system architecture diagram placeholder"
+          <div className="mx-auto w-full max-w-6xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pb-24 lg:pt-36">
+            <motion.div
+              variants={heroContainer}
+              initial="hidden"
+              animate="show"
+              className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start"
             >
-              <div className="mb-4 flex items-center justify-between border-b border-[color:rgba(22,29,38,0.2)] pb-3">
-                <h2
-                  className={`${headingFont.className} text-2xl font-semibold tracking-tight`}
+              <motion.div variants={fadeUp} className="space-y-10">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#d5e1f5]">
+                  AI Engineer Interview Readiness
+                </p>
+                <h1
+                  className={`${headingFont.className} max-w-3xl text-5xl font-semibold leading-[0.92] tracking-tight text-[#f8fafd] sm:text-[5.2rem] lg:text-[6.6rem]`}
                 >
-                  System Architecture
-                </h2>
-                <span className="rounded-full border border-[color:rgba(22,29,38,0.24)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-                  Interview View
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {architectureFlow.map((step, index) => (
-                  <div key={step} className="flex items-center gap-2">
-                    <div className="flex min-h-10 items-center justify-center rounded-xl border border-[color:rgba(22,29,38,0.24)] bg-[var(--bg)] px-4 py-2 text-center text-xs font-semibold leading-tight tracking-wide text-[var(--ink)] sm:min-h-12 sm:py-3 sm:text-sm">
-                      {step}
-                    </div>
-                    {index < architectureFlow.length - 1 ? (
+                  Crack AI Engineer Interviews — Designed for Data Scientists.
+                </h1>
+                <p className="max-w-lg text-base leading-relaxed text-[#dce5f3] sm:text-lg">
+                  Master production-grade AI system design, LLM architecture, and
+                  the real-world tradeoffs hiring managers evaluate.
+                </p>
+                <ul className="grid gap-3 text-sm text-[#edf2fa] sm:text-base">
+                  {heroBullets.map((item) => (
+                    <li key={item.text} className="flex items-start gap-4">
                       <i
-                        className="fa-solid fa-arrow-right text-[10px] text-[var(--muted)] sm:text-xs"
+                        className={`fa-solid ${item.icon} mt-1 text-sm text-[#c6d8f8]`}
                         aria-hidden="true"
                       />
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </motion.aside>
-          </motion.div>
+                      <span>{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="space-y-3">
+                  <a
+                    href="#contact"
+                    className="inline-flex rounded-full bg-[#f1f5ff] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#0f274a] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(9,22,43,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5e1f5] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f274a]"
+                  >
+                    Join Early Access
+                  </a>
+                  <p className="text-sm text-[#d0dbef]">
+                    Designed for working Data Scientists preparing for AI Engineer
+                    roles.
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.aside
+                variants={fadeUp}
+                className="rounded-2xl border border-[color:rgba(241,245,255,0.34)] bg-[color:rgba(241,245,255,0.1)] p-5 shadow-[0_24px_46px_rgba(9,22,43,0.28)] backdrop-blur-[2px] sm:p-7"
+                aria-label="AI system architecture diagram placeholder"
+              >
+                <div className="mb-4 flex items-center justify-between border-b border-[color:rgba(241,245,255,0.24)] pb-3">
+                  <h2
+                    className={`${headingFont.className} text-2xl font-semibold tracking-tight text-[#f8fafd]`}
+                  >
+                    System Architecture
+                  </h2>
+                  <span className="rounded-full border border-[color:rgba(241,245,255,0.34)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#d8e3f8]">
+                    Interview View
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {architectureFlow.map((step, index) => (
+                    <div key={step} className="flex items-center gap-2">
+                      <div className="flex min-h-10 items-center justify-center rounded-xl border border-[color:rgba(241,245,255,0.34)] bg-[color:rgba(9,22,43,0.35)] px-4 py-2 text-center text-xs font-semibold leading-tight tracking-wide text-[#f3f7ff] sm:min-h-12 sm:py-3 sm:text-sm">
+                        {step}
+                      </div>
+                      {index < architectureFlow.length - 1 ? (
+                        <i
+                          className="fa-solid fa-arrow-right text-[10px] text-[#d8e3f8] sm:text-xs"
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </motion.aside>
+            </motion.div>
+          </div>
         </section>
 
         <motion.section
@@ -766,20 +768,21 @@ export default function Home() {
         </div>
       </footer>
 
-      <motion.div
-        variants={floatingCtaVariants}
-        initial="hidden"
-        animate={shouldShowFloatingCta ? "show" : "hidden"}
-        className="pointer-events-none fixed bottom-3 right-3 z-[70]"
-        aria-hidden={!shouldShowFloatingCta}
-      >
-        <a
-          href="#contact"
-          className="pointer-events-auto inline-flex max-w-[calc(100vw-1.5rem)] rounded-full bg-[var(--accent)] px-4 py-3 text-xs font-semibold tracking-wide text-[#f8f7f4] shadow-[0_12px_24px_rgba(24,58,115,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(24,58,115,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] sm:px-5 sm:text-sm"
+      {shouldShowFloatingCta && (
+        <motion.div
+          variants={floatingCtaVariants}
+          initial="hidden"
+          animate="show"
+          className="fixed bottom-3 right-3 z-[70]"
         >
-          Join Early Access
-        </a>
-      </motion.div>
+          <a
+            href="#contact"
+            className="inline-flex max-w-[calc(100vw-1.5rem)] rounded-full bg-[var(--accent)] px-4 py-3 text-xs font-semibold tracking-wide text-[#f8f7f4] shadow-[0_12px_24px_rgba(24,58,115,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(24,58,115,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] sm:px-5 sm:text-sm"
+          >
+            Join Early Access
+          </a>
+        </motion.div>
+      )}
     </div>
   );
 }
