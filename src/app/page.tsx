@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { Cormorant_Garamond, IBM_Plex_Sans } from "next/font/google";
-import { motion, type Variants } from "framer-motion";
 
 const headingFont = Cormorant_Garamond({
   subsets: ["latin"],
@@ -131,35 +130,6 @@ const playbookModules = [
 ];
 const COPYRIGHT_YEAR = "2026";
 
-const heroContainer: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.16,
-    },
-  },
-};
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: "easeOut" },
-  },
-};
-
-const floatingCtaVariants: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.3, ease: "easeOut" },
-  },
-};
-
 function validateEmail(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return "Email is required.";
@@ -174,10 +144,13 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const emailError = emailTouched ? validateEmail(email) : "";
   const isEmailInvalid = emailTouched && Boolean(emailError);
-  const isSubmitDisabled = Boolean(validateEmail(email));
+  const isSubmitDisabled = Boolean(validateEmail(email)) || isSubmitting;
 
   useEffect(() => {
     const existing = document.getElementById("font-awesome-cdn");
@@ -196,7 +169,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
@@ -209,6 +181,57 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setEmailTouched(true);
+    setSubmitSuccess(false);
+    setSubmitError("");
+
+    const validationError = validateEmail(email);
+    if (validationError) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const payload = {
+      name: String(formData.get("name") ?? ""),
+      email: email.trim(),
+      role: String(formData.get("role") ?? ""),
+      message: String(formData.get("message") ?? ""),
+    };
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !data.success) {
+        setSubmitError(data.error ?? "Unable to submit. Please try again.");
+        return;
+      }
+
+      setSubmitSuccess(true);
+      event.currentTarget.reset();
+      setEmail("");
+      setEmailTouched(false);
+    } catch {
+      setSubmitError("Unable to submit. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -248,7 +271,7 @@ export default function Home() {
               href="#contact"
               className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(24,58,115,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
             >
-              Join Early Access
+              Get Early Access
             </a>
           </nav>
 
@@ -289,7 +312,7 @@ export default function Home() {
                 className="mt-2 inline-flex w-fit rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4]"
                 onClick={() => setMenuOpen(false)}
               >
-                Join Early Access
+                Get Early Access
               </a>
             </div>
           </nav>
@@ -301,24 +324,22 @@ export default function Home() {
           className="bg-[#0f274a]"
         >
           <div className="mx-auto w-full max-w-6xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pb-24 lg:pt-36">
-            <motion.div
-              variants={heroContainer}
-              initial={false}
-              animate="show"
+            <div
               className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start"
             >
-              <motion.div variants={fadeUp} className="space-y-10">
+              <div className="space-y-10">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#d5e1f5]">
                   AI Engineer Interview Readiness
                 </p>
                 <h1
                   className={`${headingFont.className} max-w-3xl text-5xl font-semibold leading-[0.92] tracking-tight text-[#f8fafd] sm:text-[5.2rem] lg:text-[6.6rem]`}
                 >
-                  Crack AI Engineer Interviews — Designed for Data Scientists.
+                  Crack AI Engineer Interviews by Mastering Production-Grade AI System Design
                 </h1>
                 <p className="max-w-lg text-base leading-relaxed text-[#dce5f3] sm:text-lg">
-                  Master production-grade AI system design, LLM architecture, and
-                  the real-world tradeoffs hiring managers evaluate.
+                  Learn how to design, explain, and defend production AI systems in
+                  interviews — including RAG architecture, deployment decisions, and
+                  real hiring manager tradeoffs.
                 </p>
                 <ul className="grid gap-3 text-sm text-[#edf2fa] sm:text-base">
                   {heroBullets.map((item) => (
@@ -336,17 +357,16 @@ export default function Home() {
                     href="#contact"
                     className="inline-flex rounded-full bg-[#f1f5ff] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#0f274a] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(9,22,43,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5e1f5] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f274a]"
                   >
-                    Join Early Access
+                    Get Early Access
                   </a>
                   <p className="text-sm text-[#d0dbef]">
                     Designed for working Data Scientists preparing for AI Engineer
                     roles.
                   </p>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.aside
-                variants={fadeUp}
+              <aside
                 className="rounded-2xl border border-[color:rgba(241,245,255,0.34)] bg-[color:rgba(241,245,255,0.1)] p-5 shadow-[0_24px_46px_rgba(9,22,43,0.28)] backdrop-blur-[2px] sm:p-7"
                 aria-label="AI system architecture diagram placeholder"
               >
@@ -376,18 +396,14 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              </motion.aside>
-            </motion.div>
+              </aside>
+            </div>
           </div>
         </section>
 
-        <motion.section
+        <section
           id="about"
           className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
-          variants={fadeUp}
-          initial={false}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="mb-8 max-w-3xl">
             <h2
@@ -434,17 +450,13 @@ export default function Home() {
           </div>
 
           <p className="mt-8 border-l-2 border-[var(--accent)] pl-4 text-base leading-relaxed text-[var(--ink)] sm:text-lg">
-            AI Engineer interviews evaluate system thinking — not just modeling
-            skill.
+            AI Engineer interviews evaluate your ability to design and defend
+            production systems — not just train models.
           </p>
-        </motion.section>
+        </section>
 
-        <motion.section
+        <section
           className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 lg:py-14"
-          variants={fadeUp}
-          initial={false}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="grid gap-5 rounded-2xl border border-[color:rgba(22,29,38,0.2)] bg-[var(--surface)] p-6 shadow-[0_16px_30px_rgba(22,29,38,0.12)] md:grid-cols-2 md:gap-6 md:p-7">
             <article>
@@ -473,15 +485,11 @@ export default function Home() {
               </ul>
             </article>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
+        <section
           id="master"
           className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
-          variants={fadeUp}
-          initial={false}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="mb-8 max-w-3xl">
             <h2
@@ -490,8 +498,8 @@ export default function Home() {
               What You Master
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-              After this, you should be able to clearly design and articulate a
-              production AI system in an interview setting.
+              You will be able to design and clearly explain a production-grade AI
+              system under real interview conditions.
             </p>
           </div>
 
@@ -516,15 +524,11 @@ export default function Home() {
               </article>
             ))}
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
+        <section
           id="inside"
           className="mx-auto w-full max-w-6xl bg-[color:rgba(24,58,115,0.05)] px-5 py-14 sm:px-8 lg:py-20"
-          variants={fadeUp}
-          initial={false}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="mx-auto w-full max-w-6xl">
             <div className="mb-8 max-w-2xl">
@@ -562,14 +566,10 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
+        <section
           className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
-          variants={fadeUp}
-          initial={false}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="rounded-2xl border border-[color:rgba(24,58,115,0.26)] bg-[color:rgba(24,58,115,0.1)] p-8 shadow-[0_14px_30px_rgba(24,58,115,0.12)] sm:p-10 lg:p-12">
             <h2
@@ -585,18 +585,14 @@ export default function Home() {
               href="#contact"
               className="mt-8 inline-flex rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
             >
-              Join Early Access
+              Get Early Access
             </a>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
+        <section
           id="contact"
           className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 lg:py-20"
-          variants={fadeUp}
-          initial={false}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div>
@@ -613,10 +609,7 @@ export default function Home() {
 
             <form
               className="space-y-5 rounded-2xl border border-[color:rgba(22,29,38,0.22)] bg-[var(--surface)] p-6 shadow-[0_14px_30px_rgba(22,29,38,0.12)] sm:p-7"
-              onSubmit={(event) => {
-                event.preventDefault();
-                setEmailTouched(true);
-              }}
+              onSubmit={handleContactSubmit}
               noValidate
             >
               <div className="space-y-2">
@@ -697,15 +690,23 @@ export default function Home() {
                   disabled={isSubmitDisabled}
                   className="rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                 >
-                  Join Early Access
+                  {isSubmitting ? "Submitting..." : "Get Early Access"}
                 </button>
                 <p className="text-sm text-[var(--muted)]">
                   No spam. No generic newsletters. Just early access updates.
                 </p>
+                {submitSuccess ? (
+                  <p className="text-sm text-[var(--accent)]">
+                    Submitted successfully. We&apos;ll be in touch soon.
+                  </p>
+                ) : null}
+                {submitError ? (
+                  <p className="text-sm text-red-700">{submitError}</p>
+                ) : null}
               </div>
             </form>
           </div>
-        </motion.section>
+        </section>
       </main>
 
       <footer className="border-t border-[color:rgba(22,29,38,0.16)]">
@@ -741,10 +742,10 @@ export default function Home() {
               Contact
             </p>
             <a
-              href="mailto:hello@aiinterviewreadiness.com"
+              href="mailto:hello@anish.studio"
               className="block text-sm text-[var(--ink)] transition-colors duration-200 hover:text-[var(--accent)] focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)]"
             >
-              hello@aiinterviewreadiness.com
+              hello@anish.studio
             </a>
             <p className="pt-3 text-xs text-[var(--muted)]">
               Copyright {COPYRIGHT_YEAR} AI Engineer Interview Readiness
@@ -754,10 +755,7 @@ export default function Home() {
       </footer>
 
       {isMounted && showFloatingCta && (
-        <motion.div
-          variants={floatingCtaVariants}
-          initial={false}
-          animate="show"
+        <div
           className="fixed bottom-4 right-4 z-[70]"
         >
           <a
@@ -766,11 +764,11 @@ export default function Home() {
               WebkitTapHighlightColor: "transparent",
               outline: "none",
             }}
-            className="inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] shadow-[0_12px_24px_rgba(24,58,115,0.3)] transition-all duration-300 active:scale-[0.98] focus:outline-none focus:ring-0"
+            className="inline-flex select-none rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-wide text-[#f8f7f4] shadow-[0_12px_24px_rgba(24,58,115,0.3)] transition-all duration-300 active:scale-[0.98] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
           >
-            Join Early Access
+            Get Early Access
           </a>
-        </motion.div>
+        </div>
       )}
     </div>
   );
