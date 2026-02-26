@@ -178,12 +178,9 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    setSubmitStatus((prev) => (prev === "error" ? "idle" : prev));
-  }, [email]);
-
   const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitStatus === "loading") return;
     const form = event.currentTarget;
     setEmailTouched(true);
 
@@ -203,26 +200,30 @@ export default function Home() {
       message: String(formData.get("message") ?? ""),
     };
 
+    let response: Response;
+
     try {
-      const response = await fetch("/api/contact", {
+      response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        throw new Error("Unable to submit. Please try again.");
-      }
-
-      setSubmitStatus("success");
-      form.reset();
-      setEmail("");
-      setEmailTouched(false);
     } catch {
       setSubmitStatus("error");
+      return;
     }
+
+    if (!response.ok) {
+      setSubmitStatus("error");
+      return;
+    }
+
+    setSubmitStatus("success");
+    form.reset();
+    setEmail("");
+    setEmailTouched(false);
   };
 
   return (
@@ -626,7 +627,12 @@ export default function Home() {
                   name="email"
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (submitStatus === "error") {
+                      setSubmitStatus("idle");
+                    }
+                  }}
                   onBlur={() => setEmailTouched(true)}
                   aria-invalid={isEmailInvalid}
                   aria-describedby={isEmailInvalid ? "email-error" : undefined}
