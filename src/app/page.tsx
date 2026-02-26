@@ -141,16 +141,16 @@ function validateEmail(value: string) {
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showFloatingCta, setShowFloatingCta] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
 
   const emailError = emailTouched ? validateEmail(email) : "";
   const isEmailInvalid = emailTouched && Boolean(emailError);
-  const isSubmitDisabled = Boolean(validateEmail(email)) || isSubmitting;
+  const isSubmitDisabled =
+    Boolean(validateEmail(email)) || submitStatus === "loading";
 
   useEffect(() => {
     const existing = document.getElementById("font-awesome-cdn");
@@ -169,10 +169,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
     const handleScroll = () => {
       const threshold = window.innerHeight * 0.4;
       setShowFloatingCta(window.scrollY > threshold);
@@ -185,11 +181,11 @@ export default function Home() {
   const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setEmailTouched(true);
-    setSubmitSuccess(false);
-    setSubmitError("");
+    setSubmitStatus("loading");
 
     const validationError = validateEmail(email);
     if (validationError) {
+      setSubmitStatus("error");
       return;
     }
 
@@ -200,8 +196,6 @@ export default function Home() {
       role: String(formData.get("role") ?? ""),
       message: String(formData.get("message") ?? ""),
     };
-
-    setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/contact", {
@@ -218,18 +212,16 @@ export default function Home() {
       };
 
       if (!response.ok || !data.success) {
-        setSubmitError(data.error ?? "Unable to submit. Please try again.");
+        setSubmitStatus("error");
         return;
       }
 
-      setSubmitSuccess(true);
+      setSubmitStatus("success");
       event.currentTarget.reset();
       setEmail("");
       setEmailTouched(false);
     } catch {
-      setSubmitError("Unable to submit. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      setSubmitStatus("error");
     }
   };
 
@@ -690,18 +682,20 @@ export default function Home() {
                   disabled={isSubmitDisabled}
                   className="rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                 >
-                  {isSubmitting ? "Submitting..." : "Get Early Access"}
+                  {submitStatus === "loading" ? "Submitting..." : "Get Early Access"}
                 </button>
                 <p className="text-sm text-[var(--muted)]">
                   No spam. No generic newsletters. Just early access updates.
                 </p>
-                {submitSuccess ? (
+                {submitStatus === "success" ? (
                   <p className="text-sm text-[var(--accent)]">
                     Submitted successfully. We&apos;ll be in touch soon.
                   </p>
                 ) : null}
-                {submitError ? (
-                  <p className="text-sm text-red-700">{submitError}</p>
+                {submitStatus === "error" ? (
+                  <p className="text-sm text-red-700">
+                    Unable to submit. Please try again.
+                  </p>
                 ) : null}
               </div>
             </form>
@@ -754,7 +748,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {isMounted && showFloatingCta && (
+      {showFloatingCta && (
         <div
           className="fixed bottom-4 right-4 z-[70]"
         >
