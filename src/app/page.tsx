@@ -199,26 +199,13 @@ export default function Home() {
   useEffect(() => {
     const onScroll = () => {
       const threshold = window.innerHeight * 0.4;
+      const heroBottom = heroRef.current?.getBoundingClientRect().bottom ?? 0;
+      setIsHeroVisible(heroBottom > 0);
       setShowFloatingCta(window.scrollY > threshold);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const heroElement = heroRef.current;
-    if (!heroElement) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        setIsHeroVisible(entries[0]?.isIntersecting ?? false);
-      },
-      { threshold: 0.2 }
-    );
-
-    observer.observe(heroElement);
-    return () => observer.disconnect();
   }, []);
 
   const shouldShowFloatingCta = showFloatingCta && !isHeroVisible;
@@ -770,12 +757,12 @@ export default function Home() {
       {shouldShowFloatingCta && (
         <motion.div
           variants={floatingCtaVariants}
-          initial="hidden"
           animate="show"
           className="fixed bottom-3 right-3 z-[70]"
         >
           <a
             href="#contact"
+            style={{ WebkitTapHighlightColor: "transparent" }}
             className="inline-flex max-w-[calc(100vw-1.5rem)] rounded-full bg-[var(--accent)] px-4 py-3 text-xs font-semibold tracking-wide text-[#f8f7f4] shadow-[0_12px_24px_rgba(24,58,115,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(24,58,115,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] sm:px-5 sm:text-sm"
           >
             Join Early Access
