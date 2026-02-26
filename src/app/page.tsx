@@ -141,7 +141,6 @@ function validateEmail(value: string) {
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showFloatingCta, setShowFloatingCta] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
@@ -167,10 +166,6 @@ export default function Home() {
     link.crossOrigin = "anonymous";
     link.referrerPolicy = "no-referrer";
     document.head.appendChild(link);
-  }, []);
-
-  useEffect(() => {
-    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -753,7 +748,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {isMounted && showFloatingCta && (
+      {showFloatingCta && (
         <div
           className="fixed bottom-4 right-4 z-[70]"
         >
