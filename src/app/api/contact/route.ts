@@ -23,6 +23,13 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json(
+      { success: false, error: "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
+
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const role = typeof body.role === "string" ? body.role.trim() : "";
