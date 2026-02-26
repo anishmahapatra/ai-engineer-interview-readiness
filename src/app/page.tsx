@@ -180,14 +180,17 @@ export default function Home() {
 
   const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitStatus === "loading") return;
+    const form = event.currentTarget;
     setEmailTouched(true);
-    setSubmitStatus("loading");
 
     const validationError = validateEmail(email);
     if (validationError) {
       setSubmitStatus("error");
       return;
     }
+
+    setSubmitStatus("loading");
 
     const formData = new FormData(event.currentTarget);
     const payload = {
@@ -197,32 +200,30 @@ export default function Home() {
       message: String(formData.get("message") ?? ""),
     };
 
+    let response: Response;
+
     try {
-      const response = await fetch("/api/contact", {
+      response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-
-      const data = (await response.json()) as {
-        success?: boolean;
-        error?: string;
-      };
-
-      if (!response.ok || !data.success) {
-        setSubmitStatus("error");
-        return;
-      }
-
-      setSubmitStatus("success");
-      event.currentTarget.reset();
-      setEmail("");
-      setEmailTouched(false);
     } catch {
       setSubmitStatus("error");
+      return;
     }
+
+    if (!response.ok) {
+      setSubmitStatus("error");
+      return;
+    }
+
+    setSubmitStatus("success");
+    form.reset();
+    setEmail("");
+    setEmailTouched(false);
   };
 
   return (
@@ -626,7 +627,12 @@ export default function Home() {
                   name="email"
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (submitStatus === "error") {
+                      setSubmitStatus("idle");
+                    }
+                  }}
                   onBlur={() => setEmailTouched(true)}
                   aria-invalid={isEmailInvalid}
                   aria-describedby={isEmailInvalid ? "email-error" : undefined}
