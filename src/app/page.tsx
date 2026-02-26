@@ -178,16 +178,22 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    setSubmitStatus((prev) => (prev === "error" ? "idle" : prev));
+  }, [email]);
+
   const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
     setEmailTouched(true);
-    setSubmitStatus("loading");
 
     const validationError = validateEmail(email);
     if (validationError) {
       setSubmitStatus("error");
       return;
     }
+
+    setSubmitStatus("loading");
 
     const formData = new FormData(event.currentTarget);
     const payload = {
@@ -206,18 +212,12 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
 
-      const data = (await response.json()) as {
-        success?: boolean;
-        error?: string;
-      };
-
-      if (!response.ok || !data.success) {
-        setSubmitStatus("error");
-        return;
+      if (!response.ok) {
+        throw new Error("Unable to submit. Please try again.");
       }
 
       setSubmitStatus("success");
-      event.currentTarget.reset();
+      form.reset();
       setEmail("");
       setEmailTouched(false);
     } catch {
