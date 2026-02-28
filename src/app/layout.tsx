@@ -15,6 +15,9 @@ export const metadata = {
   title: "AI Engineer Interview Readiness for Data Scientists",
   description:
     "Transition from Data Scientist to AI Engineer by mastering production-grade AI system design, RAG architecture, and interview-ready system thinking.",
+  icons: {
+    icon: "/icon.png",
+  },
   openGraph: {
     title: "AI Engineer Interview Readiness",
     description:
