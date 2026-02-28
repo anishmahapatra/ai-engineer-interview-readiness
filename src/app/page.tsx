@@ -198,6 +198,7 @@ export default function Home() {
       email: email.trim(),
       role: String(formData.get("role") ?? ""),
       message: String(formData.get("message") ?? ""),
+      company: String(formData.get("company") ?? ""),
     };
 
     let response: Response;
@@ -681,6 +682,13 @@ export default function Home() {
                   placeholder="What part of AI engineer interviews feels hardest right now?"
                 />
               </div>
+
+              <input
+                type="text"
+                name="company"
+                autoComplete="off"
+                className="hidden"
+              />
 
               <div className="space-y-2">
                 <button
