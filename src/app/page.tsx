@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { Cormorant_Garamond, IBM_Plex_Sans } from "next/font/google";
+import { initAnalytics, posthog, trackEvent } from "../lib/analytics";
 
 const headingFont = Cormorant_Garamond({
   subsets: ["latin"],
@@ -169,6 +170,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    initAnalytics();
+    console.log("PostHog initialized");
+    trackEvent("page_view", { path: window.location.pathname });
+
+    const w = window as Window & { __ph_test_event_sent?: boolean };
+    if (!w.__ph_test_event_sent) {
+      posthog.capture("test_event_from_localhost");
+      w.__ph_test_event_sent = true;
+    }
+  }, []);
+
+  useEffect(() => {
     const handleScroll = () => {
       const threshold = window.innerHeight * 0.4;
       setShowFloatingCta(window.scrollY > threshold);
@@ -191,6 +204,7 @@ export default function Home() {
     }
 
     setSubmitStatus("loading");
+    trackEvent("form_submit_attempt");
 
     const formData = new FormData(event.currentTarget);
     const payload = {
@@ -212,15 +226,18 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
     } catch {
+      trackEvent("form_submit_error");
       setSubmitStatus("error");
       return;
     }
 
     if (!response.ok) {
+      trackEvent("form_submit_error");
       setSubmitStatus("error");
       return;
     }
 
+    trackEvent("form_submit_success");
     setSubmitStatus("success");
     form.reset();
     setEmail("");
@@ -349,6 +366,7 @@ export default function Home() {
                 <div className="space-y-3">
                   <a
                     href="#contact"
+                    onClick={() => trackEvent("cta_click", { location: "hero" })}
                     className="inline-flex rounded-full bg-[#f1f5ff] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#0f274a] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(9,22,43,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5e1f5] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f274a]"
                   >
                     Get Early Access
@@ -577,6 +595,7 @@ export default function Home() {
             </p>
             <a
               href="#contact"
+              onClick={() => trackEvent("cta_click", { location: "footer" })}
               className="mt-8 inline-flex rounded-full bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold tracking-wide text-[#f8f7f4] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(24,58,115,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(24,58,115,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
             >
               Get Early Access
@@ -768,6 +787,7 @@ export default function Home() {
         >
           <a
             href="#contact"
+            onClick={() => trackEvent("cta_click", { location: "floating" })}
             style={{
               WebkitTapHighlightColor: "transparent",
               outline: "none",
