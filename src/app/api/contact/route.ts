@@ -8,6 +8,7 @@ type ContactPayload = {
   email?: unknown;
   role?: unknown;
   message?: unknown;
+  company?: unknown;
   client_timezone?: unknown;
 };
 
@@ -38,8 +39,13 @@ export async function POST(request: Request) {
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const role = typeof body.role === "string" ? body.role.trim() : "";
   const message = typeof body.message === "string" ? body.message.trim() : "";
+  const company = String(body.company ?? "").trim();
   const clientTimezone =
     typeof body.client_timezone === "string" ? body.client_timezone.trim() : "";
+
+  if (company) {
+    return NextResponse.json({ success: true }, { status: 200 });
+  }
 
   if (!email) {
     return NextResponse.json(
@@ -69,6 +75,28 @@ export async function POST(request: Request) {
   const utmCampaign = url.searchParams.get("utm_campaign") ?? "";
   const utmTerm = url.searchParams.get("utm_term") ?? "";
   const utmContent = url.searchParams.get("utm_content") ?? "";
+
+  if (ipAddress) {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+    const { count, error: rateError } = await supabaseAdmin
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("ip_address", ipAddress)
+      .gte("created_at", tenMinutesAgo);
+
+    if (rateError) {
+      console.error("Rate limit check failed:", rateError);
+      return NextResponse.json({ error: "Failed to save lead" }, { status: 500 });
+    }
+
+    if ((count ?? 0) >= 5) {
+      return NextResponse.json(
+        { error: "Too many submissions. Please try again later." },
+        { status: 429 }
+      );
+    }
+  }
 
   const { error } = await supabaseAdmin
     .schema("public")
