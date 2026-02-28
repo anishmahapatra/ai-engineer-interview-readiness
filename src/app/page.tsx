@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { Cormorant_Garamond, IBM_Plex_Sans } from "next/font/google";
-import { initAnalytics, posthog, trackEvent } from "../lib/analytics";
+import { initAnalytics, trackEvent, trackEventOnce } from "../lib/analytics";
 
 const headingFont = Cormorant_Garamond({
   subsets: ["latin"],
@@ -171,14 +171,23 @@ export default function Home() {
 
   useEffect(() => {
     initAnalytics();
-    console.log("PostHog initialized");
-    trackEvent("page_view", { path: window.location.pathname });
+    trackEventOnce("page_view", { path: window.location.pathname }, `page_view:${window.location.pathname}`);
+  }, []);
 
-    const w = window as Window & { __ph_test_event_sent?: boolean };
-    if (!w.__ph_test_event_sent) {
-      posthog.capture("test_event_from_localhost");
-      w.__ph_test_event_sent = true;
-    }
+  useEffect(() => {
+    const handleScrollDepth = () => {
+      const doc = document.documentElement;
+      const scrollableHeight = doc.scrollHeight - window.innerHeight;
+      if (scrollableHeight <= 0) return;
+      const ratio = window.scrollY / scrollableHeight;
+      if (ratio >= 0.5) {
+        trackEventOnce("scroll_50_percent");
+        window.removeEventListener("scroll", handleScrollDepth);
+      }
+    };
+
+    window.addEventListener("scroll", handleScrollDepth, { passive: true });
+    return () => window.removeEventListener("scroll", handleScrollDepth);
   }, []);
 
   useEffect(() => {

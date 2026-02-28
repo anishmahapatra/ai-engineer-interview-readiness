@@ -1,6 +1,7 @@
 import posthog from "posthog-js";
 
 let hasInitialized = false;
+const firedEventKeys = new Set<string>();
 
 export function initAnalytics() {
   if (typeof window === "undefined") return;
@@ -27,6 +28,18 @@ export function trackEvent(
   if (typeof window === "undefined") return;
   initAnalytics();
   posthog.capture(eventName, properties);
+}
+
+export function trackEventOnce(
+  eventName: string,
+  properties?: Record<string, unknown>,
+  key?: string
+) {
+  if (typeof window === "undefined") return;
+  const eventKey = key ?? eventName;
+  if (firedEventKeys.has(eventKey)) return;
+  firedEventKeys.add(eventKey);
+  trackEvent(eventName, properties);
 }
 
 export { posthog };
